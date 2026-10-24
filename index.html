@@ -2,36 +2,50 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MyPay</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>MyPay - Secure Payment</title>
+<script src="https://js.paystack.co/v1/inline.js"></script>
 <style>
-body{font-family:sans-serif; background:#f5f5f5; display:flex; justify-content:center; padding-top:30px}
-.card{background:white; width:90%; max-width:350px; padding:25px; border-radius:15px; text-align:center}
-input{width:90%; padding:13px; margin:10px 0; border-radius:8px; border:1px solid #ccc}
-button{width:95%; padding:13px; background:#00b875; color:white; border:none; border-radius:8px; font-weight:bold}
+body{font-family:sans-serif; background:#f0f2f5; display:flex; justify-content:center; padding:20px;}
+.card{background:white; width:95%; max-width:400px; padding:25px; border-radius:15px; box-shadow:0 4px 15px rgba(0,0,0,0.1); text-align:center;}
+input{width:90%; padding:13px; margin:10px 0; border-radius:8px; border:1px solid #ccc;}
+button{width:95%; padding:14px; margin:8px 0; border:none; border-radius:8px; font-weight:bold; cursor:pointer;}
+.paystack{background:#00C3F7; color:white;}
+.bank{background:#0A3D62; color:white;}
+h2{color:#0A3D62;}
+.info{background:#eef6ff; padding:10px; border-radius:8px; font-size:14px; margin:10px 0;}
 </style>
 </head>
 <body>
 <div class="card">
-<h2 style="color:#00b875">MyPay</h2>
-<input id="name" placeholder="Full Name">
-<input id="phone" placeholder="Phone Number">
-<button onclick="register()">Create Account</button>
-<p id="msg"></p>
+<h2>MyPay</h2>
+<p>Secure Payment Gateway</p>
+<div class="info">
+Paystack: Card / Transfer / USSD<br>
+Bank: Direct Transfer
+</div>
+<input id="email" type="email" placeholder="Your Email">
+<input id="amount" type="number" placeholder="Amount (NGN)">
+<button class="paystack" onclick="payWithPaystack()">Pay with Paystack</button>
+<button class="bank" onclick="alert('Account: 0123456789\nBank: Moniepoint\nName: MyPay\n\nSend proof after payment')">Pay via Bank Transfer</button>
+<p id="status"></p>
 </div>
 <script>
-const SUPABASE_URL = "https://ggpiiugpasqgevkmzlbk.supabase.co";
-const SUPABASE_KEY = "sb_publishable_qentP86sH2Hk3T-VopoLZw_972a0MRg";
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-async function register(){
-  const name=document.getElementById('name').value;
-  const phone=document.getElementById('phone').value;
-  const msg=document.getElementById('msg');
-  if(!name||!phone){alert("Cika suna da phone"); return;}
-  msg.innerText="Ana kokari...";
-  const {error}=await supabaseClient.from('users').insert([{name,phone,balance:0}]);
-  if(error){msg.innerText="Error: "+error.message; msg.style.color="red";}
-  else{msg.innerText="Success! "+name+" an bude maka!"; msg.style.color="green";}
+function payWithPaystack(){
+  let email = document.getElementById("email").value;
+  let amount = document.getElementById("amount").value;
+  if(!email || !amount){ alert("Please enter email and amount"); return; }
+  let handler = PaystackPop.setup({
+    key: 'pk_live_xxxxxxxxxx',
+    email: email,
+    amount: amount * 100,
+    currency: "NGN",
+    callback: function(response){
+      document.getElementById("status").innerHTML = "Payment Successful! Ref: " + response.reference;
+      alert("Payment Successful: " + response.reference);
+    },
+    onClose: function(){ alert("Payment Cancelled"); }
+  });
+  handler.openIframe();
 }
 </script>
 </body>
